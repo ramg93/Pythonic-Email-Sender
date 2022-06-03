@@ -1,4 +1,4 @@
-name: stori
+name: pyemail
 channels:
   - defaults
 dependencies:
