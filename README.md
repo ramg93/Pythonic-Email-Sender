@@ -10,7 +10,9 @@
 
 ## Resources:
 
-### Learn the different ways to send emails through ['s tutorial on Joska de Langen's tutorial on The Real Python](https://realpython.com/python-send-email/#sending-fancy-emails)
+### Learn the different ways to send emails with python through [Joska de Langen's tutorial on The Real Python](https://realpython.com/python-send-email/#sending-fancy-emails)
 
-### For attaching images inside the corpus with html, go to [Andrew Hare's](https://stackoverflow.com/users/34211/andrew-hare) [Stack Overflow answer for this inquery](https://stackoverflow.com/questions/920910/sending-multipart-html-emails-which-contain-embedded-images?newreg=543b5e7c7f3e4020a4c779205bdcda6c)
+### For attaching images inside the email corpus with html, go to [Andrew Hare's](https://stackoverflow.com/users/34211/andrew-hare) [Stack Overflow answer for this inquery](https://stackoverflow.com/questions/920910/sending-multipart-html-emails-which-contain-embedded-images?newreg=543b5e7c7f3e4020a4c779205bdcda6c). 
+
+# Happy coding :)
 
