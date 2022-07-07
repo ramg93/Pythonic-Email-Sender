@@ -8,7 +8,9 @@
         <h3>{{ user.name }} {{ user.lastname }}</h3>
         <h4> {{ user.email }}</h4>
         <p>Added on {{ user.created_at }}</p>
-        <a href="{{ url_for('transactions', user_id=user.id) }}" class="btn btn-secondary">Transactions</a>
+        <a href="" class="btn btn-secondary">Transactions</a>
+        <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-primary">Edit</a>
+        <a href="{{ url_for('delete_user', user_id=user.id) }}" class="btn btn-danger">Delete</a>
       </div>
     </div>
   {% endfor %}

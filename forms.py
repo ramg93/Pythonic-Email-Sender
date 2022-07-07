@@ -12,3 +12,9 @@ class AddUserForm(FlaskForm):
     lastname = StringField('Lastname', validators=[DataRequired()])
     email = StringField('email', validators=[DataRequired(), Email()])
     submit = SubmitField('Submit')
+    
+
+class AddTransactionForm(FlaskForm):
+    transaction = StringField('Transaction', validators=[DataRequired()])
+    user = StringField('User ID', validators=[DataRequired()])
+    submit = SubmitField('Submit')
