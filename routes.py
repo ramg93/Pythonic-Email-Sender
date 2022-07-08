@@ -73,7 +73,6 @@ def transactions():
     transactions = models.Transaction.query.all()
     return render_template('transactions.html', transactions=transactions)
 
-
 @app.route('/addtransaction', methods=['GET', 'POST'])
 def addtransaction():
     form = forms.AddTransactionForm()
@@ -90,46 +89,38 @@ def addtransaction():
         return redirect(url_for('transactions'))
     return render_template('addtransaction.html', form=form)
 
+@app.route('/edit_transaction/<int:transaction_id>', methods=['GET', 'POST'])
+def edit_transaction(transaction_id):
+    form = forms.AddTransactionForm()
+    transaction = models.Transaction.query.get(transaction_id)
+    print(transaction)
+    if transaction:
+        if form.validate_on_submit():
+            user = db.session.query(models.User).filter(models.User.id == form.user.data)[0]
+            transaction.transaction = form.transaction.data
+            transaction.user = user
+            transaction.user_id = user.id
 
-# @app.route('/edit_transaction/<int:transaction_id>', methods=['GET', 'POST'])
-# def edit_college(college_id):
-#     form = forms.AddCollegeForm()
-#     college = models.College.query.get(college_id)
-#     print(college)
-#     if college:
-#         if form.validate_on_submit():
-#             university = db.session.query(models.University).filter(models.University.name == form.university.data)[0]
-#             college.name = form.name.data
-#             college.acronym = form.acronym.data
-#             college.address = form. address.data
-#             college.location = form.location.data
-#             college.university = university
-#             college.university_id = university.id
+            db.session.commit()
+            flash('Transaction updated')
+            return redirect(url_for('transactions'))
+        form.transaction.data = transaction.transaction
+        form.user.data = transaction.user.id
+        return render_template('edittransaction.html', form=form, transaction_id=transaction_id)
+    flash(f'Transaction with id {transaction_id} does not exit')
+    return redirect(url_for('transaction'))
 
-#             db.session.commit()
-#             flash('College updated')
-#             return redirect(url_for('colleges'))
-#         form.name.data = college.name
-#         form.acronym.data = college.acronym
-#         form.university.data = college.university.name
-#         form.address.data = college.address
-#         form.location.data = college.location
-#         return render_template('edit/edit_college.html', form=form, college_id=college_id)
-#     flash(f'College with id {college_id} does not exit')
-#     return redirect(url_for('colleges'))
-
-
-# @app.route('/delete_transaction/<int:transaction_id>', methods=['GET', 'POST'])
-# def delete_college(college_id):
-#     form = forms.DeleteForm()
-#     college = models.College.query.get(college_id)
-#     if college:
-#         if form.validate_on_submit():
-#             if form.submit.data:
-#                 db.session.delete(college)
-#                 db.session.commit()
-#                 flash('College deleted')
-#             return redirect(url_for('colleges'))
-#         return render_template('delete/delete_college.html', form=form, college_id=college_id, acronym=college.acronym)
-#     flash(f'College with id {college_id} does not exit')
-#     return redirect(url_for('colleges'))
+@app.route('/delete_transaction/<int:transaction_id>', methods=['GET', 'POST'])
+def delete_transaction(transaction_id):
+    form = forms.DeleteForm()
+    transaction = models.Transaction.query.get(transaction_id)
+    if transaction:
+        if form.validate_on_submit():
+            if form.submit.data:
+                db.session.delete(transaction)
+                db.session.commit()
+                flash('Transaction deleted')
+            return redirect(url_for('transactions'))
+        return render_template('deletetransaction.html', form=form, transaction_id=transaction_id)
+    flash(f'Transaction with id {transaction_id} does not exit')
+    return redirect(url_for('transactions'))

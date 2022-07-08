@@ -1,0 +1,29 @@
+
+{% extends "base.html" %}
+
+{% block main %}
+<div class="container-fluid">
+  <form action="{{ url_for('edit_transaction', transaction_id=transaction_id) }}" method="post">
+    {{ form.csrf_token }}
+    <div class="row">
+      <div class="col"> 
+        <h3>Edit Transaction</h3>
+      </div>
+      <div class="col">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('transactions') }}" class="btn btn-danger">Cancel</a>
+      </div>
+    </div>
+    <div class="row">
+        <div class="col">
+          <h5> Transaction </h5>
+          {{ form.transaction(class="form-control") }}
+        </div>
+        <div class="col">
+          <h5> User ID </h5>
+          {{ form.user(class="form-control") }}
+        </div>
+      </div>
+  </form>
+</div>
+{% endblock %}
