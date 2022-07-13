@@ -3,7 +3,7 @@
 
 {% block main %}
 <div class="container-fluid">
-  <form action="{{ url_for('adduser') }}" method="post">
+  <form action="{{ url_for('add_user') }}" method="post">
     {{ form.csrf_token }}
     <div class="row">
       <div class="col"> 

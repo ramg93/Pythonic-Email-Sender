@@ -1,0 +1,76 @@
+
+{% extends "base.html" %}
+
+{% block main %}
+<div class="card">
+<div class="card-body">
+    <body>
+    
+    <div class="row">
+      <div class="col"> 
+        <h2>
+            Hello, {{ name }} {{ lastname }}
+        </h2>  
+        <br>
+            <h3>
+                Herein is your Transactions Summary
+            </h3>
+        <br>
+        </div>
+        <div class="col">
+            <a href="{{ url_for('users') }}" class="btn btn-primary">Go Back</a>
+            <a href="" class="btn btn-Secondary">Send Summary</a>
+        </div>
+    </div>
+    <div>
+    <table style="width:100%">
+        <tr>
+            <th>
+                <p>
+                    <br>Total Balance: {{ total_balance }}</br>
+                    <br>Average Debit Amount: {{ avg_debit }}</br>
+                    <br>Average Credit Amount: {{ avg_credit }}</br>
+                </p>
+            </th>
+            <th>
+                <p>
+                    
+                    {% for month, count in monthly_summary %}
+                        <br>Number of transactions in {{month}}: {{count}}</br>
+                    {% endfor %}
+                </p>
+            </th>
+        </tr>
+    </table>
+    </div> 
+    </body>
+</div>
+</div>
+<div class="card">
+<div class="card-body">
+    <div class="row">
+        <div class="col"> 
+            <h2> Transactions: </h2>
+        </div>
+        
+        
+        <div class="col"> 
+            <a href="{{ url_for('add_transaction', user_id = user_id) }}" class="btn btn-primary">Add Transaction</a>
+        </div>
+    </div>
+    
+    {% for transaction in transactions %}
+        <div class="card">
+          <div class="card-body">
+            <h3>{{ df.loc[df['id'] == transaction.id, 'DebitorCredit'].values[0].capitalize() }} Transaction of {{ transaction.transaction }}</h3>
+            <h4></h4>
+            <p>Transaction date:  {{ transaction.created_at }}</p>
+            <a href="{{ url_for('edit_transaction', transaction_id=transaction.id) }}" class="btn btn-primary">Edit</a>
+            <a href="{{ url_for('delete_transaction', transaction_id=transaction.id) }}" class="btn btn-danger">Delete</a>
+          </div>
+        </div>
+        {% endfor %}
+    
+</div>
+</div>
+{% endblock %}

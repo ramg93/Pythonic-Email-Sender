@@ -3,7 +3,7 @@
 
 {% block main %}
 <div class="container-fluid">
-  <form action="{{ url_for('addtransaction') }}" method="post">
+  <form action="{{ url_for('add_transaction', user_id = user_id) }}" method="post">
     {{ form.csrf_token }}
     <div class="row">
       <div class="col"> 
@@ -11,17 +11,13 @@
       </div>
       <div class="col">
         {{ form.submit(class="btn btn-primary") }}
-        <a href="{{ url_for('transactions') }}" class="btn btn-danger">Cancel</a>
+        <a href="{{ url_for('transactions_user', user_id=user_id) }}"class="btn btn-danger">Cancel</a>
       </div>
     </div>
     <div class="row">
       <div class="col">
         <h5> Transaction </h5>
         {{ form.transaction(class="form-control") }}
-      </div>
-      <div class="col">
-        <h5> User </h5>
-        {{ form.user(class="form-control") }}
       </div>
     </div>
   </form>

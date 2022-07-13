@@ -16,5 +16,4 @@ class AddUserForm(FlaskForm):
 
 class AddTransactionForm(FlaskForm):
     transaction = StringField('Transaction', validators=[DataRequired()])
-    user = StringField('User ID', validators=[DataRequired()])
     submit = SubmitField('Submit')
