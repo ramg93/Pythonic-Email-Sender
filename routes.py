@@ -9,6 +9,10 @@ import models
 from models import *
 import forms
 
+import pickle
+import os
+from email_functions import *
+
 @app.route('/')
 def base():
     return render_template('base.html')
@@ -86,7 +90,6 @@ def add_transaction(user_id):
                                 user_id=user.id,
                                 user=user
                                 )
-# add code to determine university id
         db.session.add(transaction)
         db.session.commit()
         flash('Transaction added')
@@ -135,7 +138,7 @@ def delete_transaction(transaction_id):
     return redirect(url_for('transactions_user', user_id = user_id))
 
 # ***************************************************** Transactions User *********************************************
-from email_functions import *
+
 @app.route('/transactions_user/<int:user_id>', methods=['GET', 'POST'])
 def transactions_user(user_id):
     
@@ -151,12 +154,7 @@ def transactions_user(user_id):
     df = pd.read_sql_query(query, engine)
     session.close()
 
-    filename = f"Transactions_Summary_User_{user_id}.csv"
-    df.to_csv(filename)
-    #credentials = credentials()
-    trxns, total_balance, avg_credit, avg_debit, monthly_summary = df2Summary(df)
-    #message = createTrxnsSummaryMessage(total_balance, avg_credit, avg_debit, monthly_summary)
-    #sendEmailSLL(credentials, credentials['Receiver Email'], "Transactions Summary", message, filename)
+    trxns, total_balance, avg_credit, avg_debit, monthly_summary, _ = df2Summary(df)
     
     transactions = models.Transaction.query.filter_by(user_id = user_id).all()
     user = models.User.query.get(user_id)
@@ -174,3 +172,32 @@ def transactions_user(user_id):
                            monthly_summary = monthly_summary,
                            df = trxns,
                            transactions = transactions)
+
+@app.route('/send_summary/<int:user_id>', methods=['GET', 'POST'])
+def send_summary(user_id):
+    user = models.User.query.get(user_id)
+    credentials=pickle.load(open('secret_credentials.pkl','rb'))
+    
+    engine = create_engine("sqlite:///esa.db")
+    
+    Session = sessionmaker(bind = engine)
+    session = Session()
+    
+    query = session.query(Transaction.transaction,
+                     Transaction.created_at, Transaction.id).filter_by(
+    user_id = user_id).statement
+
+    df = pd.read_sql_query(query, engine)
+    session.close()
+
+    filename = f"Transactions_Summary_User_{user_id}.csv"
+    df.to_csv(filename)
+    print(filename)
+    
+    receiver_email = user.email
+    trxns, total_balance, avg_credit, avg_debit, _, monthly_summary_email = df2Summary(df)
+    message = createTrxnsSummaryMessage(total_balance, avg_credit, avg_debit, monthly_summary_email)
+    response = sendEmailTLS(credentials, receiver_email, "Transactions Summary", message, filename)
+    flash(response)
+    os.remove(filename)
+    return redirect(url_for('transactions_user', user_id = user_id))

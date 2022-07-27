@@ -1,26 +1,15 @@
-import smtplib, ssl
+import smtplib, ssl, base64
 
 from email import encoders
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
 
 import pandas as pd
 import pickle
 import os
 
-def credentials():
-    if not os.path.exists('secret_credentials.pkl'):
-        credentials={}
-        credentials['Sender Email'] = "" # sender email account
-        credentials['Sender Password'] = "" # sender email account password
-        credentials['Receiver Email'] = "" # receiver email account
-        with open('secret_credentials.pkl','wb') as f:
-            pickle.dump(credentials, f)
-    else:
-        credentials=pickle.load(open('secret_credentials.pkl','rb'))
-        
-    return credentials
     
 def df2Summary(trxns):
     '''
@@ -44,15 +33,15 @@ def df2Summary(trxns):
     trxns['c'] = pd.to_datetime(trxns.created_at, format = "%Y-%m-%d")
     trxns['month'] = trxns.c.dt.strftime("%B")
     trx_per_month = trxns.month.value_counts()
-    #monthly_summary = ""
+    monthly_summary_email = ""
     monthly_summary = []
     #Create an html-formatted string to inject into the email body for only the months included
     for month, count in zip(trx_per_month.index, trx_per_month):
-        #monthly_summary += f"<br>Number of transactions in {month}: {count}</br>\n"
+        monthly_summary_email += f"<br>Number of transactions in {month}: {count}</br>\n"
         monthly_summary.append([month, count])
-    return trxns, total_balance, avg_credit, avg_debit, monthly_summary
+    return trxns, total_balance, avg_credit, avg_debit, monthly_summary, monthly_summary_email
 
-def createTrxnsSummaryMessage(total_balance, avg_credit, avg_debit, monthly_summary):
+def createTrxnsSummaryMessage(total_balance, avg_credit, avg_debit, monthly_summary_email):
     '''
         Input =>
             total_balance: Float
@@ -64,6 +53,9 @@ def createTrxnsSummaryMessage(total_balance, avg_credit, avg_debit, monthly_summ
     '''
     
     message = MIMEMultipart("alternative")
+    filename = "images/imageslogo_knot.png"
+    image = base64.b64encode(open(filename, "rb").read())
+    image_base64 = image.decode()
 
     
     html = f"""
@@ -86,7 +78,7 @@ def createTrxnsSummaryMessage(total_balance, avg_credit, avg_debit, monthly_summ
                         </th>
                         <th>
                             <p>
-                                {monthly_summary}
+                                {monthly_summary_email}
                             </p>
                         </th>
                       </tr>
@@ -98,7 +90,7 @@ def createTrxnsSummaryMessage(total_balance, avg_credit, avg_debit, monthly_summ
                     <br>B. Sc. Mechatronics Engineering</br>
                     <br><a href="https://www.linkedin.com/in/ra%C3%BAl-murga/">LinkedIn</a></br>
                     <br><a href="https://github.com/ramg93">GitHub</a></br>
-                    <br><img align="left" width="150" height="150" src="cid:image1"></br>
+                    <br><img align="left" width="150" height="150" src= "data:image/jpg;base64,{image_base64}"></br>
                 </p>
             </div>
         </body>
@@ -107,17 +99,10 @@ def createTrxnsSummaryMessage(total_balance, avg_credit, avg_debit, monthly_summ
     """
     html_text = MIMEText(html, "html")
     message.attach(html_text)
-
-    fp = open('images/imageslogo_knot.png', 'rb')
-    msgImage = MIMEImage(fp.read())
-    fp.close()
-
-    msgImage.add_header('Content-ID', '<image1>')
-    message.attach(msgImage)
     
     return message
 
-def sendEmailSLL(credentials, receiver_email, subject, message, *filename):
+def sendEmailTLS(credentials, receiver_email, subject, message, *filename):
     '''
         Input =>
             credentials: Dict
@@ -137,27 +122,24 @@ def sendEmailSLL(credentials, receiver_email, subject, message, *filename):
     
     if filename:
 
-        with open(filename, "rb") as attachment:
+        with open(filename[0], "rb") as attachment:
+    
             part = MIMEBase("application", "octet-stream")
             part.set_payload(attachment.read()) 
         encoders.encode_base64(part)
         part.add_header(
             "Content-Disposition",
-            f"attachment; filename= {filename}",
+            f"attachment; filename= {filename[0]}",
         )
         message.attach(part)
     
     try:
-        port = 465 # Assign 465 port for the SMTP server (Gmail's requirements)
-        context = ssl.create_default_context() 
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
-            server.login(sender_email, password)
-            server.sendmail(
-                sender_email, 
-                receiver_email, 
-                message.as_string()
-            )
-        print("email sent successfully")
+        smtp = smtplib.SMTP("smtp-mail.outlook.com", 587)
+        smtp.starttls()
+        smtp.login(sender_email, password)
+        smtp.sendmail(sender_email, receiver_email, message. as_string())
+        smtp.quit()
+        
+        return f"email sent successfully to {receiver_email}"
     except Exception as e:
-        print("error sending email: ", e)
+        return f"error sending email: {e}"
